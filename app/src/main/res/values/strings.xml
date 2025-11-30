@@ -4,4 +4,5 @@
     <string name="button_visualizar_trilhas">Visualizar trilhas</string>
     <string name="button_registrar_trilha">Registrar trilha</string>
     <string name="button_creditos">Créditos</string>
+    <string name="text_credits">Sistema de gerenciamento de trilhas\n\n Funcionalidades:\n\n - Configurar dados do usuário, tipo de mapa e forma de navegação;\n\n - Registrar novas trilhas, com informações em tempo real, sendo elas:\n \t- Velocidade instantânea e máxima;\n \t- Cronômetro;\n \t- Distância total percorrida;\n \t- Gasto calórico;\n \t- Círculo em volta da posição do usuário como indicador de acurácia.\n\n - Consultar trilhas e todas as suas informações.</string>
 </resources>
