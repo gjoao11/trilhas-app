@@ -22,5 +22,10 @@ public class MainActivity extends AppCompatActivity {
             Intent i = new Intent(this, ConfigActivity.class);
             startActivity(i);
         });
+
+        buttonCreditos.setOnClickListener(v -> {
+            Intent i = new Intent(this, CreditsActivity.class);
+            startActivity(i);
+        });
     }
 }
