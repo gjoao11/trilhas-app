@@ -60,6 +60,7 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
     private LocationCallback locationCallback;
 
     private boolean isTracking = false;
+    private boolean hasUnsavedTrack = false;
     private long startTime = 0L;
     private final Handler timerHandler = new Handler(Looper.getMainLooper());
 
@@ -149,10 +150,12 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
         createLocationCallback();
 
         binding.buttonIniciar.setOnClickListener(v -> {
-            if (!isTracking) {
-                startTracking();
-            } else {
+            if (isTracking) {
                 stopTracking();
+            } else if (hasUnsavedTrack) {
+                showSaveDialog();
+            } else {
+                startTracking();
             }
         });
     }
@@ -292,7 +295,6 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
 
     private void stopTracking() {
         isTracking = false;
-        binding.buttonIniciar.setText("Iniciar");
 
         timerHandler.removeCallbacks(timerRunnable);
         fusedLocationClient.removeLocationUpdates(locationCallback);
@@ -310,7 +312,12 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
         }
 
         if (pathPoints.size() > 1) { // Only save if there's a path
+            hasUnsavedTrack = true;
+            binding.buttonIniciar.setText("Salvar");
             showSaveDialog();
+        } else {
+            binding.buttonIniciar.setText("Iniciar");
+            hasUnsavedTrack = false;
         }
     }
 
@@ -332,6 +339,11 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
             }
         });
         builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.cancel());
+        builder.setNeutralButton("Descartar", (dialog, which) -> {
+            hasUnsavedTrack = false;
+            binding.buttonIniciar.setText("Iniciar");
+            dialog.dismiss();
+        });
 
         builder.show();
     }
@@ -362,6 +374,8 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
             long detalheId = db.insert(TrilhaDBHelper.TABLE_DETALHES, null, detalhesValues);
             if (detalheId != -1) {
                 Toast.makeText(this, "Trilha salva com sucesso!", Toast.LENGTH_SHORT).show();
+                hasUnsavedTrack = false;
+                binding.buttonIniciar.setText("Iniciar");
             } else {
                 Toast.makeText(this, "Erro ao salvar detalhes da trilha.", Toast.LENGTH_SHORT).show();
             }
