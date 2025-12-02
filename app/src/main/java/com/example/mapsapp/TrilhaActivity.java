@@ -68,8 +68,12 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
     private Polyline pathPolyline;
     private TrilhaDBHelper dbHelper;
 
-    private String mapTypeSetting;
-    private String navigationModeSetting;
+    private int mapTypeSetting;
+    private int navigationModeSetting;
+
+    private static final int NAVIGATION_MODE_NORTH_UP = 0;
+    private static final int NAVIGATION_MODE_COURSE_UP = 1;
+
 
     private final Runnable timerRunnable = new Runnable() {
         @Override
@@ -125,10 +129,14 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
     }
 
     private void loadSettings() {
-        SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        userWeight = prefs.getFloat("user_weight", -1.0f);
-        mapTypeSetting = prefs.getString("map_type", "vetorial");
-        navigationModeSetting = prefs.getString("navigation_mode", "north_up");
+        SharedPreferences prefs = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
+        userWeight = prefs.getFloat("peso_salvo", 0f);
+
+        // Lê o tipo de mapa salvo (GoogleMap.MAP_TYPE_*)
+        mapTypeSetting = prefs.getInt("mapa_tipo_valor", GoogleMap.MAP_TYPE_NORMAL);
+
+        // Lê o modo de navegação salvo (NAV_MODE_*)
+        navigationModeSetting = prefs.getInt("navegacao_modo_valor", -1);
     }
 
     private void applyMapSettings() {
@@ -136,17 +144,11 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
             return;
         }
 
-        if ("satelite".equals(mapTypeSetting)) {
-            mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
-        } else {
-            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        }
+        // Aplica o tipo de mapa (GoogleMap.MAP_TYPE_NORMAL ou SATELLITE)
+        mMap.setMapType(mapTypeSetting);
 
-        if ("north_up".equals(navigationModeSetting)) {
-            mMap.getUiSettings().setRotateGesturesEnabled(false);
-        } else {
-            mMap.getUiSettings().setRotateGesturesEnabled(true);
-        }
+        // Aplica o modo de navegação (habilita a rotação se não for North Up)
+        mMap.getUiSettings().setRotateGesturesEnabled(navigationModeSetting != NAVIGATION_MODE_NORTH_UP);
     }
 
     private void createLocationRequest() {
@@ -199,9 +201,12 @@ public class TrilhaActivity extends FragmentActivity implements OnMapReadyCallba
                     .target(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()))
                     .zoom(17f);
 
-            if ("course_up".equals(navigationModeSetting) && currentLocation.hasBearing() && currentLocation.getSpeed() > 0.5) {
+            // Ajuste aqui também para usar a constante correta para o modo Course Up
+            // A lógica de bearing é para o modo Course Up:
+            if (navigationModeSetting == NAVIGATION_MODE_COURSE_UP && currentLocation.hasBearing() && currentLocation.getSpeed() > 0.5) {
                 cameraBuilder.bearing(currentLocation.getBearing());
             } else {
+                // Se for North Up, o bearing fica 0
                 cameraBuilder.bearing(0);
             }
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraBuilder.build()));
