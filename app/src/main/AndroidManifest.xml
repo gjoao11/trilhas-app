@@ -31,6 +31,14 @@
             android:name=".ConfigActivity"
             android:exported="false" />
         <activity
+            android:name=".TrilhasSalvasActivity"
+            android:exported="false"
+            android:label="Trilhas Salvas"/>
+        <activity
+            android:name=".DetalhesTrilhaActivity"
+            android:exported="false"
+            android:label="Detalhes da Trilha"/>
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

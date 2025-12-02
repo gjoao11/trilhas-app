@@ -3,23 +3,17 @@ package com.example.mapsapp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class ConfigActivity extends AppCompatActivity {
+
     private SharedPreferences sharedPreferences;
     private EditText inputPeso;
-    private EditText inputAltura;
-    private RadioGroup radioGenero;
-    private EditText inputNascimento;
     private RadioGroup radioMap;
     private RadioGroup radioNavigation;
 
@@ -29,75 +23,64 @@ public class ConfigActivity extends AppCompatActivity {
         setContentView(R.layout.activity_config);
         setTitle("Configurações");
 
-        sharedPreferences = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
-        SharedPreferences.Editor e = sharedPreferences.edit();
+        sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
 
         inputPeso = findViewById(R.id.input_peso);
-        inputAltura = findViewById(R.id.input_altura);
-        radioGenero = findViewById(R.id.RadioGroupSex);
-        inputNascimento = findViewById(R.id.input_birth);
-
         radioMap = findViewById(R.id.RadioGroupMap);
-
         radioNavigation = findViewById(R.id.RadioGroupNavigation);
 
-        String savedPeso = sharedPreferences.getString("peso_salvo", "");
-        String savedAltura = sharedPreferences.getString("altura_salvo", "");
-        String savedNascimento = sharedPreferences.getString("nascimento_salvo", "");
+        loadSettings();
 
-        inputPeso.setText(savedPeso);
-        inputAltura.setText(savedAltura);
-        inputNascimento.setText(savedNascimento);
+        findViewById(R.id.button_save).setOnClickListener(v -> saveSettings());
+    }
 
-        int generoIdSalvo = sharedPreferences.getInt("genero_selecionado", -1);
-        if (generoIdSalvo != -1 && radioGenero != null) {
-            radioGenero.check(generoIdSalvo);
+    private void loadSettings() {
+        float weight = sharedPreferences.getFloat("user_weight", -1.0f);
+        if (weight > 0) {
+            inputPeso.setText(String.valueOf(weight));
         }
 
-        int mapaIdSalvo = sharedPreferences.getInt("mapa_selecionado", -1);
-        if (mapaIdSalvo != -1 && radioMap != null) {
-            radioMap.check(mapaIdSalvo);
+        String mapType = sharedPreferences.getString("map_type", "vetorial");
+        if ("satelite".equals(mapType)) {
+            radioMap.check(R.id.radio_satelite);
+        } else {
+            radioMap.check(R.id.radio_vetorial);
         }
 
-        int navegacaoIdSalva = sharedPreferences.getInt("navegacao_selecionada", -1);
-        if (navegacaoIdSalva != -1 && radioNavigation != null) {
-            radioNavigation.check(navegacaoIdSalva);
-        }
-
-
-
-        if (radioGenero != null) {
-            radioGenero.setOnCheckedChangeListener((group, checkedId) -> {
-                e.putInt("genero_selecionado", checkedId);
-                e.apply();
-            });
-        }
-
-        if (radioMap != null) {
-            radioMap.setOnCheckedChangeListener((group, checkedId) -> {
-                e.putInt("mapa_selecionado", checkedId);
-                e.apply();
-            });
-        }
-
-        if (radioNavigation != null) {
-            radioNavigation.setOnCheckedChangeListener((group, checkedId) -> {
-                e.putInt("navegacao_selecionada", checkedId);
-                e.apply();
-            });
+        String navigationMode = sharedPreferences.getString("navigation_mode", "north_up");
+        if ("course_up".equals(navigationMode)) {
+            radioNavigation.check(R.id.radio_course_up);
+        } else {
+            radioNavigation.check(R.id.radio_north_up);
         }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    private void saveSettings() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        SharedPreferences.Editor e = sharedPreferences.edit();
+        try {
+            float weight = Float.parseFloat(inputPeso.getText().toString());
+            editor.putFloat("user_weight", weight);
+        } catch (NumberFormatException e) {
+            editor.putFloat("user_weight", -1.0f);
+        }
 
-        e.putString("peso_salvo", inputPeso.getText().toString());
-        e.putString("altura_salvo", inputAltura.getText().toString());
-        e.putString("nascimento_salvo", inputNascimento.getText().toString());
+        int selectedMapTypeId = radioMap.getCheckedRadioButtonId();
+        if (selectedMapTypeId == R.id.radio_satelite) {
+            editor.putString("map_type", "satelite");
+        } else {
+            editor.putString("map_type", "vetorial");
+        }
 
-        e.apply();
+        int selectedNavigationId = radioNavigation.getCheckedRadioButtonId();
+        if (selectedNavigationId == R.id.radio_course_up) {
+            editor.putString("navigation_mode", "course_up");
+        } else {
+            editor.putString("navigation_mode", "north_up");
+        }
+
+        editor.apply();
+        Toast.makeText(this, "Configurações salvas!", Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

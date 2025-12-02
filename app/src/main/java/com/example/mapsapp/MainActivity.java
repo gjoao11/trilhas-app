@@ -28,6 +28,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(i);
         });
 
+        buttonVisualizarTrilhas.setOnClickListener(v -> {
+            Intent i = new Intent(this, TrilhasSalvasActivity.class);
+            startActivity(i);
+        });
+
         buttonCreditos.setOnClickListener(v -> {
             Intent i = new Intent(this, CreditsActivity.class);
             startActivity(i);
